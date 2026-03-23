@@ -26,9 +26,9 @@ def set_seed(seed=42):
 @dataclass
 class ModelConfig:
     seed: int = 42
-    model_name: str = "lstm"   # lstm, gru, cnn_lstm, lstm_att
+    model_name: str = "lstm"   # lstm, gru, cnn_lstm
 
-    epochs: int = 20
+    epochs: int = 10
     batch_size: int = 128
     learning_rate: float = 1e-3
 
@@ -37,9 +37,6 @@ class ModelConfig:
     kernel_size: int = 3
     dense_units: int = 64
     dropout: float = 0.2
-
-    att_num_heads: int = 4
-    att_key_dim: int = 16
 
 
 # ============================================================
@@ -84,7 +81,7 @@ def get_callbacks():
 
 
 # ============================================================
-# MODELS
+# BASELINE MODELS
 # ============================================================
 
 def build_lstm(input_shape, cfg: ModelConfig):
@@ -142,33 +139,6 @@ def build_cnn_lstm(input_shape, cfg: ModelConfig):
     return model
 
 
-def build_lstm_att(input_shape, cfg: ModelConfig):
-    inp = layers.Input(shape=input_shape)
-
-    x = layers.LSTM(cfg.rnn_units, return_sequences=True)(inp)
-    x = layers.Dropout(cfg.dropout)(x)
-
-    att = layers.MultiHeadAttention(
-        num_heads=cfg.att_num_heads,
-        key_dim=cfg.att_key_dim
-    )(x, x)
-
-    x = layers.Add()([x, att])
-    x = layers.LayerNormalization()(x)
-
-    x = layers.GlobalAveragePooling1D()(x)
-    x = layers.Dense(cfg.dense_units, activation="relu")(x)
-    x = layers.Dropout(cfg.dropout)(x)
-    out = layers.Dense(1)(x)
-
-    model = models.Model(inp, out, name="lstm_attention_model")
-    model.compile(
-        optimizer=optimizers.Adam(learning_rate=cfg.learning_rate),
-        loss="mse"
-    )
-    return model
-
-
 def build_model(input_shape, cfg: ModelConfig):
     if cfg.model_name == "lstm":
         return build_lstm(input_shape, cfg)
@@ -176,8 +146,6 @@ def build_model(input_shape, cfg: ModelConfig):
         return build_gru(input_shape, cfg)
     elif cfg.model_name == "cnn_lstm":
         return build_cnn_lstm(input_shape, cfg)
-    elif cfg.model_name == "lstm_att":
-        return build_lstm_att(input_shape, cfg)
     else:
         raise ValueError(f"Unknown model_name: {cfg.model_name}")
 
@@ -227,13 +195,15 @@ def train_and_evaluate_model(
 
 
 # ============================================================
-# SIMPLE BASELINE RUNNER
+# RUN ALL BASELINES
 # ============================================================
 
-def run_baselines(X_train, y_train, X_val, y_val, X_test, y_test):
+def run_all_baselines(X_train, y_train, X_val, y_val, X_test, y_test):
     all_results = []
 
-    for model_name in ["lstm", "gru", "cnn_lstm"]:
+    baseline_models = ["lstm", "gru", "cnn_lstm"]
+
+    for model_name in baseline_models:
         cfg = ModelConfig(
             model_name=model_name,
             epochs=10,
@@ -255,85 +225,6 @@ def run_baselines(X_train, y_train, X_val, y_val, X_test, y_test):
 
         all_results.append(results)
         print(results)
-
-    return all_results
-
-
-# ============================================================
-# LIGHT DIAGNOSTIC FOR CNN-LSTM
-# ============================================================
-
-def search_cnn_lstm(X_train, y_train, X_val, y_val, X_test, y_test):
-    all_results = []
-
-    for conv_filters in [32, 64, 128]:
-        for kernel_size in [3, 5]:
-            for rnn_units in [32, 64, 128]:
-                for dropout in [0.1, 0.2, 0.3]:
-                    for learning_rate in [1e-3, 5e-4]:
-
-                        cfg = ModelConfig(
-                            model_name="cnn_lstm",
-                            epochs=12,
-                            batch_size=128,
-                            learning_rate=learning_rate,
-                            rnn_units=rnn_units,
-                            conv_filters=conv_filters,
-                            kernel_size=kernel_size,
-                            dense_units=64,
-                            dropout=dropout
-                        )
-
-                        _, _, _, _, results = train_and_evaluate_model(
-                            X_train, y_train,
-                            X_val, y_val,
-                            X_test, y_test,
-                            cfg
-                        )
-
-                        all_results.append(results)
-                        print(results)
-
-    all_results = sorted(all_results, key=lambda x: x["val_rmse"])
-    return all_results
-
-
-# ============================================================
-# SEARCH FOR LSTM-ATT
-# ============================================================
-
-def search_lstm_att(X_train, y_train, X_val, y_val, X_test, y_test):
-    all_results = []
-
-    for rnn_units in [64, 128]:
-        for att_num_heads in [2, 4]:
-            for att_key_dim in [16, 32]:
-                for dense_units in [64, 128]:
-                    for dropout in [0.1, 0.2, 0.3]:
-                        for learning_rate in [1e-3, 5e-4]:
-                            for batch_size in [64, 128]:
-
-                                cfg = ModelConfig(
-                                    model_name="lstm_att",
-                                    epochs=15,
-                                    batch_size=batch_size,
-                                    learning_rate=learning_rate,
-                                    rnn_units=rnn_units,
-                                    dense_units=dense_units,
-                                    dropout=dropout,
-                                    att_num_heads=att_num_heads,
-                                    att_key_dim=att_key_dim
-                                )
-
-                                _, _, _, _, results = train_and_evaluate_model(
-                                    X_train, y_train,
-                                    X_val, y_val,
-                                    X_test, y_test,
-                                    cfg
-                                )
-
-                                all_results.append(results)
-                                print(results)
 
     all_results = sorted(all_results, key=lambda x: x["val_rmse"])
     return all_results
