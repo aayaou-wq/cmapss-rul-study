@@ -1,4 +1,3 @@
-%%writefile /kaggle/working/cmapss-rul-study/src/preprocessing.py
 import pandas as pd
 
 
