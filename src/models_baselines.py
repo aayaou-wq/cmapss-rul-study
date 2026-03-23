@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, optimizers
 
 
-def build_lstm(input_shape, rnn_units=64, dense_units=64, dropout=0.2, lr=1e-3):
+def build_lstm(input_shape, rnn_units=64, dense_units=64, dropout=0.2, learning_rate=1e-3):
     inp = layers.Input(shape=input_shape)
 
     x = layers.LSTM(rnn_units)(inp)
@@ -14,13 +14,13 @@ def build_lstm(input_shape, rnn_units=64, dense_units=64, dropout=0.2, lr=1e-3):
 
     model = models.Model(inp, out, name="lstm_model")
     model.compile(
-        optimizer=optimizers.Adam(learning_rate=lr),
+        optimizer=optimizers.Adam(learning_rate=learning_rate),
         loss="mse"
     )
     return model
 
 
-def build_gru(input_shape, rnn_units=64, dense_units=64, dropout=0.2, lr=1e-3):
+def build_gru(input_shape, rnn_units=64, dense_units=64, dropout=0.2, learning_rate=1e-3):
     inp = layers.Input(shape=input_shape)
 
     x = layers.GRU(rnn_units)(inp)
@@ -32,7 +32,7 @@ def build_gru(input_shape, rnn_units=64, dense_units=64, dropout=0.2, lr=1e-3):
 
     model = models.Model(inp, out, name="gru_model")
     model.compile(
-        optimizer=optimizers.Adam(learning_rate=lr),
+        optimizer=optimizers.Adam(learning_rate=learning_rate),
         loss="mse"
     )
     return model
@@ -45,7 +45,7 @@ def build_cnn_lstm(
     rnn_units=64,
     dense_units=64,
     dropout=0.2,
-    lr=1e-3
+    learning_rate=1e-3
 ):
     inp = layers.Input(shape=input_shape)
 
@@ -67,50 +67,40 @@ def build_cnn_lstm(
 
     model = models.Model(inp, out, name="cnn_lstm_model")
     model.compile(
-        optimizer=optimizers.Adam(learning_rate=lr),
+        optimizer=optimizers.Adam(learning_rate=learning_rate),
         loss="mse"
     )
     return model
 
 
-def build_model(
-    model_name,
-    input_shape,
-    rnn_units=64,
-    conv_filters=64,
-    kernel_size=3,
-    dense_units=64,
-    dropout=0.2,
-    lr=1e-3
-):
+def build_model(model_name, input_shape, config):
     if model_name == "lstm":
         return build_lstm(
             input_shape=input_shape,
-            rnn_units=rnn_units,
-            dense_units=dense_units,
-            dropout=dropout,
-            lr=lr
+            rnn_units=config["rnn_units"],
+            dense_units=config["dense_units"],
+            dropout=config["dropout"],
+            learning_rate=config["learning_rate"]
         )
 
-    elif model_name == "gru":
+    if model_name == "gru":
         return build_gru(
             input_shape=input_shape,
-            rnn_units=rnn_units,
-            dense_units=dense_units,
-            dropout=dropout,
-            lr=lr
+            rnn_units=config["rnn_units"],
+            dense_units=config["dense_units"],
+            dropout=config["dropout"],
+            learning_rate=config["learning_rate"]
         )
 
-    elif model_name == "cnn_lstm":
+    if model_name == "cnn_lstm":
         return build_cnn_lstm(
             input_shape=input_shape,
-            conv_filters=conv_filters,
-            kernel_size=kernel_size,
-            rnn_units=rnn_units,
-            dense_units=dense_units,
-            dropout=dropout,
-            lr=lr
+            conv_filters=config["conv_filters"],
+            kernel_size=config["kernel_size"],
+            rnn_units=config["rnn_units"],
+            dense_units=config["dense_units"],
+            dropout=config["dropout"],
+            learning_rate=config["learning_rate"]
         )
 
-    else:
-        raise ValueError(f"Unknown model_name: {model_name}")
+    raise ValueError(f"Unknown model_name: {model_name}")
