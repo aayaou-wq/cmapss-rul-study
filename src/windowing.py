@@ -5,7 +5,7 @@ import pandas as pd
 DEFAULT_TARGET_COLUMN = "RUL"
 DEFAULT_UNIT_COLUMN = "unit_nr"
 DEFAULT_TIME_COLUMN = "time_cycles"
-DEFAULT_PADDING_METHOD = "edge"   # "edge" or "zero"
+DEFAULT_PADDING_METHOD = "edge" # "edge" or "zero"
 
 
 def _pad_sequence(features: np.ndarray, window_size: int, padding_method: str):
