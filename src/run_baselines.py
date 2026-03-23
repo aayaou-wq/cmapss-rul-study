@@ -2,12 +2,7 @@ from .models_baselines import build_model
 from .train_utils import set_seed, train_and_evaluate_model
 
 
-def run_all_baselines(
-    X_train, y_train,
-    X_val, y_val,
-    X_test, y_test,
-    seed=42
-):
+def run_all_baselines(X_train, y_train, X_val, y_val, X_test, y_test, seed=42):
     set_seed(seed)
 
     input_shape = (X_train.shape[1], X_train.shape[2])
@@ -46,7 +41,6 @@ def run_all_baselines(
 
         results["model"] = model_name
         all_results.append(results)
-
         print(results)
 
     all_results = sorted(all_results, key=lambda x: x["val_rmse"])
