@@ -19,8 +19,11 @@ def rmse(y_true, y_pred):
 
 
 def nasa_score(y_true, y_pred):
-    y_true = np.asarray(y_true)
-    y_pred = np.asarray(y_pred)
+    """
+    PHM08 asymmetric score
+    """
+    y_true = np.asarray(y_true).reshape(-1)
+    y_pred = np.asarray(y_pred).reshape(-1)
 
     d = y_pred - y_true
     score = 0.0
@@ -71,7 +74,7 @@ def train_and_evaluate_model(
         verbose=1
     )
 
-    train_time_sec = time.time() - start_time
+    train_time = time.time() - start_time
 
     val_pred = model.predict(X_val, verbose=0).reshape(-1)
     test_pred = model.predict(X_test, verbose=0).reshape(-1)
@@ -81,7 +84,7 @@ def train_and_evaluate_model(
         "test_rmse": round(rmse(y_test, test_pred), 4),
         "test_score": round(nasa_score(y_test, test_pred), 4),
         "epochs_ran": len(history.history["loss"]),
-        "train_time_sec": round(train_time_sec, 2),
+        "train_time_sec": round(train_time, 2)
     }
 
     return history, val_pred, test_pred, results
