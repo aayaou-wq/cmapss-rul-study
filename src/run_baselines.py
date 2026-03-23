@@ -1,5 +1,5 @@
-from models_baselines import build_model
-from train_utils import set_seed, train_and_evaluate_model
+from .models_baselines import build_model
+from .train_utils import set_seed, train_and_evaluate_model
 
 
 def run_all_baselines(
