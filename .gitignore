@@ -1,0 +1,10 @@
+outputs/
+artifacts/
+checkpoints/
+*.h5
+*.pt
+*.pkl
+*.joblib
+*.csv
+__pycache__/
+.ipynb_checkpoints/
