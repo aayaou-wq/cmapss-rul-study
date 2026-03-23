@@ -83,7 +83,7 @@ def build_model(model_name, input_shape, config):
             learning_rate=config["learning_rate"]
         )
 
-    if model_name == "gru":
+    elif model_name == "gru":
         return build_gru(
             input_shape=input_shape,
             rnn_units=config["rnn_units"],
@@ -92,7 +92,7 @@ def build_model(model_name, input_shape, config):
             learning_rate=config["learning_rate"]
         )
 
-    if model_name == "cnn_lstm":
+    elif model_name == "cnn_lstm":
         return build_cnn_lstm(
             input_shape=input_shape,
             conv_filters=config["conv_filters"],
@@ -103,4 +103,5 @@ def build_model(model_name, input_shape, config):
             learning_rate=config["learning_rate"]
         )
 
-    raise ValueError(f"Unknown model_name: {model_name}")
+    else:
+        raise ValueError(f"Unknown model_name: {model_name}")
