@@ -11,11 +11,20 @@ def run_all_baselines(
     set_seed(seed)
 
     input_shape = (X_train.shape[1], X_train.shape[2])
+
+    base_config = {
+        "rnn_units": 64,
+        "conv_filters": 64,
+        "kernel_size": 3,
+        "dense_units": 64,
+        "dropout": 0.2,
+        "learning_rate": 1e-3
+    }
+
+    model_names = ["lstm", "gru", "cnn_lstm"]
     all_results = []
 
-    baseline_models = ["lstm", "gru", "cnn_lstm"]
-
-    for model_name in baseline_models:
+    for model_name in model_names:
         print(f"\n==============================")
         print(f"Running baseline: {model_name}")
         print(f"==============================")
@@ -23,12 +32,7 @@ def run_all_baselines(
         model = build_model(
             model_name=model_name,
             input_shape=input_shape,
-            rnn_units=64,
-            conv_filters=64,
-            kernel_size=3,
-            dense_units=64,
-            dropout=0.2,
-            lr=1e-3
+            config=base_config
         )
 
         _, _, _, results = train_and_evaluate_model(
